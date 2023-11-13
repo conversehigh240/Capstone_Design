@@ -56,7 +56,9 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
 def draw_connections(frame, keypoints, edges, confidence_threshold):
     y, x, c = frame.shape
     shaped = np.squeeze(np.multiply(keypoints, [y,x,1]))
-    print("shaped: ", shaped)
+    #print("np.multiply: ", np.multiply(keypoints, [y,x,1]))
+    #print("keypoints: ", keypoints)
+    #print("shaped: ", shaped)
 
     for edge, color in edges.items():
         p1, p2 = edge
@@ -97,6 +99,12 @@ def calculate_similarity(keypoints1, keypoints2):
     return similarity
 
 
+def getAngle(p1, p2, p3):
+    import math
+    angle = math.degrees(math.atan2(p3[1]-p2[1], p3[0]-p2[0]) - math.atan2(p1[1]-p2[1], p1[0]-p2[0]))
+    return 360 - angle if angle > 180 else abs(angle)
+
+
 def main(youtube_url):
 
     youtube_stream_url = get_YouTube_stream_url(youtube_url)
@@ -133,6 +141,84 @@ def main(youtube_url):
             loop_through_people(frame_youtube, youtube_keypoints, EDGES, 0.1)
             webcam_keypoints = get_keypoints(frame_webcam)
             loop_through_people(frame_webcam, webcam_keypoints, EDGES, 0.1)
+
+            # 모범 keypoints
+            ex_nose = youtube_keypoints[0]
+            ex_eye_l, ex_eye_r = youtube_keypoints[1], youtube_keypoints[2]
+            ex_ear_l, ex_ear_r = youtube_keypoints[3], youtube_keypoints[4]
+            ex_shoulder_l, ex_shoulder_r = youtube_keypoints[5], youtube_keypoints[6]
+            ex_elbow_l, ex_elbow_r = youtube_keypoints[7], youtube_keypoints[8]
+            ex_wrist_l, ex_wrist_r = youtube_keypoints[9], youtube_keypoints[10]
+            ex_hip_l, ex_hip_r = youtube_keypoints[11], youtube_keypoints[12]
+            ex_knee_l, ex_knee_r = youtube_keypoints[13], youtube_keypoints[14]
+            ex_ankle_l, ex_ankle_r = youtube_keypoints[15], youtube_keypoints[16]
+            
+            # 사용자 keypoints
+            user_nose = webcam_keypoints[0]
+            user_eye_l, user_eye_r = webcam_keypoints[1], webcam_keypoints[2]
+            user_ear_l, user_ear_r = webcam_keypoints[3], webcam_keypoints[4]
+            user_shoulder_l, user_shoulder_r = webcam_keypoints[5], webcam_keypoints[6]
+            user_elbow_l, user_elbow_r = webcam_keypoints[7], webcam_keypoints[8]
+            user_wrist_l, user_wrist_r = webcam_keypoints[9], webcam_keypoints[10]
+            user_hip_l, user_hip_r = webcam_keypoints[11], webcam_keypoints[12]
+            user_knee_l, user_knee_r = webcam_keypoints[13], webcam_keypoints[14]
+            user_ankle_l, user_ankle_r = webcam_keypoints[15], webcam_keypoints[16]
+
+            # 왼쪽 팔꿈치 각도 체크하기
+            ex_elbow_l_angle = getAngle(ex_shoulder_l, ex_elbow_l, ex_wrist_l)
+            user_elbow_l_angle = getAngle(user_shoulder_l, user_elbow_l, user_wrist_l)
+            # print(ex_elbow_l_angle)
+            # print(user_elbow_l_angle)
+
+            print("왼쪽 팔꿈치: ", end="")
+            if abs(ex_elbow_l_angle - user_elbow_l_angle) < 10:
+                print("Good")
+            elif ex_elbow_l_angle < user_elbow_l_angle:
+                print("더 구부릴 것")
+            else:
+                print("조금 펴볼 것")
+
+            # 오른쪽 팔꿈치 각도 체크하기
+            ex_elbow_r_angle = getAngle(ex_shoulder_r, ex_elbow_r, ex_wrist_r)
+            user_elbow_r_angle = getAngle(user_shoulder_r, user_elbow_r, user_wrist_r)
+            # print(ex_elbow_r_angle)
+            # print(user_elbow_r_angle)
+
+            print("오른쪽 팔꿈치: ", end="")
+            if abs(ex_elbow_r_angle - user_elbow_r_angle) < 10:
+                print("Good")
+            elif ex_elbow_r_angle < user_elbow_r_angle:
+                print("더 구부릴 것")
+            else:
+                print("조금 펴볼 것")
+
+            # 왼쪽 무릎 각도 체크하기
+            ex_knee_l_angle = getAngle(ex_hip_l, ex_knee_l, ex_ankle_l)
+            user_knee_l_angle = getAngle(user_hip_l, user_knee_l, user_ankle_l)
+            # print(ex_knee_l_angle)
+            # print(user_knee_l_angle)
+
+            print("왼쪽 무릎: ", end="")
+            if abs(ex_knee_l_angle - user_knee_l_angle) < 10:
+                print("Good")
+            elif ex_knee_l_angle < user_knee_l_angle:
+                print("더 구부릴 것")
+            else:
+                print("조금 펴볼 것")
+
+            # 오른쪽 무릎 각도 체크하기
+            ex_knee_r_angle = getAngle(ex_hip_r, ex_knee_r, ex_ankle_r)
+            user_knee_r_angle = getAngle(user_hip_r, user_knee_r, user_ankle_r)
+            # print(ex_knee_r_angle)
+            # print(user_knee_r_angle)
+
+            print("오른쪽 무릎: ", end="")
+            if abs(ex_knee_r_angle - user_knee_r_angle) < 10:
+                print("Good")
+            elif ex_knee_r_angle < user_knee_r_angle:
+                print("더 구부릴 것")
+            else:
+                print("조금 펴볼 것")
 
             # 유사도 계산
             similarity = calculate_similarity(youtube_keypoints, webcam_keypoints)
