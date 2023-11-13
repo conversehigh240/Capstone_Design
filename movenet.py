@@ -7,8 +7,12 @@ import urllib
 import yt_dlp
 import time
 
-model = hub.load('https://tfhub.dev/google/movenet/multipose/lightning/1')
+#model = hub.load('https://tfhub.dev/google/movenet/multipose/lightning/1')
+#movenet = model.signatures['serving_default']
+
+model = hub.load("https://tfhub.dev/google/movenet/singlepose/thunder/4")
 movenet = model.signatures['serving_default']
+input_size = 256
 
 EDGES = {
     (0, 1): 'm',
@@ -32,9 +36,11 @@ EDGES = {
 }
 
 def loop_through_people(frame, keypoints_with_scores, edges, confidence_threshold):
-    for person in keypoints_with_scores:
-        draw_connections(frame, person, edges, confidence_threshold)
-        draw_keypoints(frame, person, confidence_threshold)
+    #for person in keypoints_with_scores:
+    #    draw_connections(frame, person, edges, confidence_threshold)
+    #    draw_keypoints(frame, person, confidence_threshold)
+    draw_connections(frame, keypoints_with_scores, edges, confidence_threshold)
+    draw_keypoints(frame, keypoints_with_scores, confidence_threshold)
 
 
 def draw_keypoints(frame, keypoints, confidence_threshold):
@@ -50,7 +56,8 @@ def draw_keypoints(frame, keypoints, confidence_threshold):
 def draw_connections(frame, keypoints, edges, confidence_threshold):
     y, x, c = frame.shape
     shaped = np.squeeze(np.multiply(keypoints, [y,x,1]))
-    
+    print("shaped: ", shaped)
+
     for edge, color in edges.items():
         p1, p2 = edge
         y1, x1, c1 = shaped[p1]
@@ -58,7 +65,6 @@ def draw_connections(frame, keypoints, edges, confidence_threshold):
         
         if (c1 > confidence_threshold) & (c2 > confidence_threshold):      
             cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 4)
-
 
 def get_YouTube_stream_url(youtube_url):
     ydl_opts = {}
@@ -71,13 +77,15 @@ def get_YouTube_stream_url(youtube_url):
 def get_keypoints(frame):
     # 이미지 전처리
     img = frame.copy()
-    # img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    img = tf.image.resize_with_pad(tf.expand_dims(img, axis=0), 384, 640)
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #img = tf.image.resize_with_pad(tf.expand_dims(img, axis=0), 384, 640)
+    img = tf.image.resize_with_pad(tf.expand_dims(img, axis=0), input_size, input_size)
     input_img = tf.cast(img, dtype=tf.int32)
 
     # keypoint 예측
     results = movenet(input_img)
-    keypoints = results['output_0'].numpy()[:,:,:51].reshape((6,17,3))
+    #keypoints = results['output_0'].numpy()[:,:,:51].reshape((6,17,3))
+    keypoints = results['output_0'].numpy()[:,0,:51].reshape((17,3))
 
     return keypoints
     
@@ -144,5 +152,5 @@ def main(youtube_url):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    youtube_url = "https://www.youtube.com/watch?v=hpJIcy0syxw"
+    youtube_url = "https://www.youtube.com/watch?v=OFibSNpw2hE"
     main(youtube_url)
