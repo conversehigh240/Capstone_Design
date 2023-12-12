@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Today's Workout</title>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">
+            <img src="{{ url_for('static', filename='woman_logo.png') }}" width="40" height="40">
+        </a>
+    </div>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" width="750" height="92">
+    </div>
+    <div class="search-bar">
+        <div class="input">
+            <div class="search-box">
+                <div class="inner">
+                    <div class="input-box">
+                        <form action="http://127.0.0.1:6001/process" method="post">
+                            <input type="text" name="youtube_url" placeholder="Paste YouTube Link Here" onkeypress="if(event.keyCode == 13) {enterkey();}">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="contents maxi">
+            <div class="videolist">
+                <ul>
+                    {% for video in video_list %}
+                    <li class="videoitem">
+                        <div class="videoview">
+                            <div class="thumbnail">
+                                <a href="{{ url_for('result', id=video.id) }}">
+                                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+                                </a>
+                            </div>
+                            <div class="info">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                <div class="text">
+                                    <span class="title">
+                                        {{ video.title }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

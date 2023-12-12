@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">
+            <img src="{{ url_for('static', filename='woman_logo.png') }}" width="40" height="40">
+        </a>
+    </div>
+    <div class="result-container">
+        <div class="video-container">
+            <video id="player" controls>
+                <source src="{{ url_for('get_video', id=video_id) }}" type="video/mp4">
+            </video>
+        </div>
+        <!-- <div class="webcam-container">
+            <img src="{{ url_for('test') }}">
+        </div> -->
+        <div class="webcam-container">
+            <img id="webcam-image" src="{{ url_for('get_webcam') }}">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('player').addEventListener('play', function() {
+            document.getElementById('webcam-image').src = "{{ url_for('get_similarity', id=video_id) }}"
+        })
+
+        document.getElementById('player').addEventListener('ended', function() {
+            document.getElementById('webcam-image').src = "{{ url_for('get_webcam') }}"
+        })
+    </script>
+
+</body>
+</html>
